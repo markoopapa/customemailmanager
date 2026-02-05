@@ -34,18 +34,36 @@ class AdminCustomEmailConfigController extends ModuleAdminController
 }
 
     public function renderForm()
-    {
-        $this->fields_form = array(
-            'legend' => array('title' => $this->l('Edit Template'), 'icon' => 'icon-envelope'),
-            'input' => array(
-                array('type' => 'text', 'label' => $this->l('Template Name'), 'name' => 'name', 'required' => true),
-                array('type' => 'textarea', 'label' => $this->l('HTML Content'), 'name' => 'content_html', 'autoload_rte' => false, 'desc' => $this->l('Paste your modern responsive HTML here.')),
+{
+    $this->fields_form = array(
+        'legend' => array('title' => $this->l('Edit Email Template'), 'icon' => 'icon-envelope'),
+        'input' => array(
+            array('type' => 'text', 'label' => $this->l('Template Name'), 'name' => 'name', 'required' => true),
+            array(
+                'type' => 'textarea', 
+                'label' => $this->l('HTML Content'), 
+                'name' => 'content_html', 
+                'autoload_rte' => false, // Kikapcsoljuk a sima szövegszerkesztőt
+                'rows' => 20,
+                'cols' => 100,
+                'desc' => $this->l('You can use {shop_name}, {items}, {order_name}, etc. as variables.')
             ),
-            'submit' => array('title' => $this->l('Save'))
-        );
+            array(
+                'type' => 'switch',
+                'label' => $this->l('Active'),
+                'name' => 'active',
+                'is_bool' => true,
+                'values' => array(
+                    array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Yes')),
+                    array('id' => 'active_off', 'value' => 0, 'label' => $this->l('No'))
+                ),
+            ),
+        ),
+        'submit' => array('title' => $this->l('Save'))
+    );
 
-        return parent::renderForm();
-    }
+    return parent::renderForm();
+}
 
     public function ajaxProcessSendTestEmail()
 {
