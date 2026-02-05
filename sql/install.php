@@ -5,6 +5,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'custom_email_templates`
     `id_template` int(11) NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `content_html` text NOT NULL,
+    `target_email` varchar(50) DEFAULT "all", -- ÚJ OSZLOP (pl: order_conf, new_order, all)
     `active` tinyint(1) DEFAULT 1,
     PRIMARY KEY (`id_template`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
