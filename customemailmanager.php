@@ -113,7 +113,6 @@ private function installDefaultTemplates()
         if (Validate::isLoadedObject($template_data)) {
             $full_html = $template_data->content_html;
             
-            // Kicseréljük az összes változót a sablonban
             foreach ($template_vars as $key => $value) {
                 if (is_string($value) || is_numeric($value)) {
                     $full_html = str_replace($key, $value, $full_html);
@@ -146,7 +145,10 @@ private function installDefaultTemplates()
     }
 
     public function uninstall()
-    {
-        return parent::uninstall();
-    }
+{
+    $sql = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'custom_email_templates`';
+    Db::getInstance()->execute($sql);
+
+    return parent::uninstall();
+}
 }
