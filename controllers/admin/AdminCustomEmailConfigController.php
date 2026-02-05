@@ -38,12 +38,34 @@ class AdminCustomEmailConfigController extends ModuleAdminController
     $this->fields_form = array(
         'legend' => array('title' => $this->l('Edit Email Template'), 'icon' => 'icon-envelope'),
         'input' => array(
-            array('type' => 'text', 'label' => $this->l('Template Name'), 'name' => 'name', 'required' => true),
+            array(
+                'type' => 'text', 
+                'label' => $this->l('Template Name'), 
+                'name' => 'name', 
+                'required' => true
+            ),
+            array(
+                'type' => 'select',
+                'label' => $this->l('Target Email Type'),
+                'name' => 'target_email',
+                'desc' => $this->l('Select which email this template should be applied to.'),
+                'options' => array(
+                    'query' => array(
+                        array('id' => 'all', 'name' => $this->l('All Emails (General Wrapper)')),
+                        array('id' => 'order_conf', 'name' => $this->l('Customer Confirmation (order_conf)')),
+                        array('id' => 'new_order', 'name' => $this->l('Admin New Order Alert (new_order)')),
+                        array('id' => 'shipped', 'name' => $this->l('Order Shipped (shipped)')),
+                        array('id' => 'order_canceled', 'name' => $this->l('Order Canceled (order_canceled)')),
+                    ),
+                    'id' => 'id',
+                    'name' => 'name'
+                )
+            ),
             array(
                 'type' => 'textarea', 
                 'label' => $this->l('HTML Content'), 
                 'name' => 'content_html', 
-                'autoload_rte' => false, // Kikapcsoljuk a sima szövegszerkesztőt
+                'autoload_rte' => false, 
                 'rows' => 20,
                 'cols' => 100,
                 'desc' => $this->l('You can use {shop_name}, {items}, {order_name}, etc. as variables.')
