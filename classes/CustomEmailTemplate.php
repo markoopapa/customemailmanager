@@ -12,6 +12,7 @@ class CustomEmailTemplate extends ObjectModel
         'fields' => array(
             'name' => array('type' => self::TYPE_STRING, 'validate' => 'isGenericName', 'required' => true, 'size' => 255),
             'content_html' => array('type' => self::TYPE_HTML, 'validate' => 'isCleanHtml', 'required' => true),
+            'target_email' => array('type' => self::TYPE_STRING, 'validate' => 'isGenericName', 'size' => 50),
             'active' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
         ),
     );
