@@ -2,20 +2,36 @@
 class AdminCustomEmailConfigController extends ModuleAdminController
 {
     public function __construct()
-    {
-        $this->bootstrap = true;
-        $this->table = 'custom_email_templates';
-        $this->className = 'CustomEmailTemplate'; // Ehhez kell majd egy ObjectModel fájl is
-        $this->identifier = 'id_template';
+{
+    $this->bootstrap = true;
+    $this->table = 'custom_email_templates';
+    $this->className = 'CustomEmailTemplate';
+    $this->identifier = 'id_template';
 
-        parent::__construct();
+    parent::__construct();
 
-        $this->fields_list = array(
-            'id_template' => array('title' => $this->l('ID'), 'width' => 30),
-            'name' => array('title' => $this->l('Template Name'), 'width' => 'auto'),
-            'active' => array('title' => $this->l('Status'), 'active' => 'status'),
-        );
-    }
+    $this->addRowAction('edit');
+    $this->addRowAction('delete');
+
+    $this->fields_list = array(
+        'id_template' => array(
+            'title' => $this->l('ID'),
+            'align' => 'center',
+            'class' => 'fixed-width-xs'
+        ),
+        'name' => array(
+            'title' => $this->l('Template Name'),
+            'width' => 'auto'
+        ),
+        'active' => array(
+            'title' => $this->l('Status'),
+            'active' => 'status',
+            'type' => 'bool',
+            'align' => 'center',
+            'class' => 'fixed-width-sm'
+        ),
+    );
+}
 
     public function renderForm()
     {
