@@ -35,6 +35,68 @@ class AdminCustomEmailConfigController extends ModuleAdminController
 
     public function renderForm()
 {
+    // Ez a HTML/JS kód felel a valós idejű előnézetért
+    $preview_html = '
+    <div class="panel">
+        <div class="panel-heading"><i class="icon-eye"></i> Live Preview</div>
+        <div class="alert alert-info">Ez egy minta előnézet. Írj a fenti HTML dobozba, és itt azonnal megjelenik az eredmény!</div>
+        <iframe id="live_preview_frame" style="width:100%; height:600px; border:1px solid #d3d8db; background:#fff; border-radius:5px;"></iframe>
+    </div>
+    <script>
+        $(document).ready(function() {
+            var $textarea = $("#content_html");
+            var $iframe = $("#live_preview_frame");
+            
+            // Mintaadatok a változók helyére (hogy szép legyen)
+            var replacements = {
+                "{shop_name}": "My PrestaShop Store",
+                "{shop_logo}": "https://via.placeholder.com/150x50?text=Shop+Logo",
+                "{firstname}": "John",
+                "{lastname}": "Doe",
+                "{email}": "john.doe@example.com",
+                "{order_name}": "XJ9-TEST-ORDER",
+                "{date}": "2026-02-05",
+                "{payment}": "Credit Card",
+                "{total_paid}": "15,000 Ft",
+                "{carrier}": "GLS Hungary",
+                "{message}": "Kérem a csengőt hosszan nyomni!",
+                // Itt generálunk egy kamu terméklistát képpel
+                "{items}": `<table style="width:100%; border-collapse:collapse;">
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px;"><img src="https://via.placeholder.com/64" style="border-radius:4px;"></td>
+                        <td style="padding:10px;"><strong>Teszt Termék 1</strong><br><small style="color:#888;">Ref: DEMO-001</small></td>
+                        <td style="padding:10px; text-align:right;">5,000 Ft</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px;"><img src="https://via.placeholder.com/64" style="border-radius:4px;"></td>
+                        <td style="padding:10px;"><strong>Teszt Termék 2</strong><br><small style="color:#888;">Ref: DEMO-002</small></td>
+                        <td style="padding:10px; text-align:right;">10,000 Ft</td>
+                    </tr>
+                </table>`
+            };
+
+            function updatePreview() {
+                var content = $textarea.val();
+                
+                // Végigmegyünk a változókon és kicseréljük őket a mintaadatokra
+                for (var key in replacements) {
+                    // Globális csere (minden előfordulást)
+                    content = content.split(key).join(replacements[key]);
+                }
+
+                var doc = $iframe[0].contentWindow.document;
+                doc.open();
+                doc.write(content);
+                doc.close();
+            }
+
+            // Frissítés gépeléskor és betöltéskor
+            $textarea.on("input keyup change", updatePreview);
+            setTimeout(updatePreview, 500); // Kicsi késleltetés induláskor
+        });
+    </script>
+    ';
+
     $this->fields_form = array(
         'legend' => array('title' => $this->l('Edit Email Template'), 'icon' => 'icon-envelope'),
         'input' => array(
@@ -48,14 +110,11 @@ class AdminCustomEmailConfigController extends ModuleAdminController
                 'type' => 'select',
                 'label' => $this->l('Target Email Type'),
                 'name' => 'target_email',
-                'desc' => $this->l('Select which email this template should be applied to.'),
                 'options' => array(
                     'query' => array(
-                        array('id' => 'all', 'name' => $this->l('All Emails (General Wrapper)')),
-                        array('id' => 'order_conf', 'name' => $this->l('Customer Confirmation (order_conf)')),
-                        array('id' => 'new_order', 'name' => $this->l('Admin New Order Alert (new_order)')),
-                        array('id' => 'shipped', 'name' => $this->l('Order Shipped (shipped)')),
-                        array('id' => 'order_canceled', 'name' => $this->l('Order Canceled (order_canceled)')),
+                        array('id' => 'all', 'name' => $this->l('All Emails')),
+                        array('id' => 'order_conf', 'name' => $this->l('Customer Confirmation')),
+                        array('id' => 'new_order', 'name' => $this->l('Admin Alert')),
                     ),
                     'id' => 'id',
                     'name' => 'name'
@@ -65,10 +124,17 @@ class AdminCustomEmailConfigController extends ModuleAdminController
                 'type' => 'textarea', 
                 'label' => $this->l('HTML Content'), 
                 'name' => 'content_html', 
+                'id' => 'content_html', // Fontos a JS-nek!
                 'autoload_rte' => false, 
-                'rows' => 20,
+                'rows' => 15,
                 'cols' => 100,
-                'desc' => $this->l('You can use {shop_name}, {items}, {order_name}, etc. as variables.')
+                'hint' => $this->l('Edit the HTML code here. The preview below will update automatically.')
+            ),
+            // Itt adjuk hozzá az előnézeti ablakot, mint egy "custom" mezőt
+            array(
+                'type' => 'free',
+                'label' => $this->l('Preview'),
+                'name' => 'live_preview_field',
             ),
             array(
                 'type' => 'switch',
@@ -84,9 +150,11 @@ class AdminCustomEmailConfigController extends ModuleAdminController
         'submit' => array('title' => $this->l('Save'))
     );
 
+    // Átadjuk a HTML/JS kódot a 'free' mezőnek
+    $this->fields_value['live_preview_field'] = $preview_html;
+
     return parent::renderForm();
 }
-
     public function ajaxProcessSendTestEmail()
 {
     $test_email = Tools::getValue('test_email');
