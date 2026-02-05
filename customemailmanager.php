@@ -37,13 +37,20 @@ class CustomEmailManager extends Module
 
 private function installDefaultTemplates()
 {
-    include_once($this->local_path.'sql/default_templates.php');
+    // Beimportáljuk a fájlt, amiben a $default_templates tömb van
+    include_once($this->local_path . 'sql/default_templates.php');
 
-    foreach ($default_templates as $tpl) {
-        Db::getInstance()->execute('
-            INSERT INTO `' . _DB_PREFIX_ . 'custom_email_templates` (`name`, `content_html`, `active`)
-            VALUES ("' . pSQL($tpl['name']) . '", "' . pSQL($tpl['content'], true) . '", 1)
-        ');
+    if (isset($default_templates) && is_array($default_templates)) {
+        foreach ($default_templates as $tpl) {
+            Db::getInstance()->execute('
+                INSERT INTO `' . _DB_PREFIX_ . 'custom_email_templates` (`name`, `content_html`, `active`)
+                VALUES (
+                    "' . pSQL($tpl['name']) . '", 
+                    "' . pSQL($tpl['content_html'], true) . '", 
+                    1
+                )
+            ');
+        }
     }
     return true;
 }
