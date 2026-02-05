@@ -21,12 +21,32 @@ class CustomEmailManager extends Module
     }
 
     public function install()
-    {
-        // Adatbázis létrehozása és Hook-ok regisztrálása
-        return parent::install() &&
-            $this->registerHook('actionEmailSendBefore') &&
-            $this->installTab();
+{
+    if (!parent::install() ||
+        !$this->registerHook('actionEmailSendBefore') ||
+        !$this->installTab()) {
+        return false;
     }
+
+    // SQL tábla létrehozása
+    include_once($this->local_path.'sql/install.php');
+
+    // Alapértelmezett sablonok betöltése
+    return $this->installDefaultTemplates();
+}
+
+private function installDefaultTemplates()
+{
+    include_once($this->local_path.'sql/default_templates.php');
+
+    foreach ($default_templates as $tpl) {
+        Db::getInstance()->execute('
+            INSERT INTO `' . _DB_PREFIX_ . 'custom_email_templates` (`name`, `content_html`, `active`)
+            VALUES ("' . pSQL($tpl['name']) . '", "' . pSQL($tpl['content'], true) . '", 1)
+        ');
+    }
+    return true;
+}
 
     public function hookActionEmailSendBefore($params)
 {
