@@ -1,8 +1,9 @@
 <?php
 if (!defined('_PS_VERSION_')) {
-    require_once dirname(__FILE__) . '/classes/CustomEmailTemplate.php';
     exit;
 }
+
+require_once dirname(__FILE__) . '/classes/CustomEmailTemplate.php';
 
 class CustomEmailManager extends Module
 {
