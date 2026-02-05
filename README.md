@@ -1,4 +1,3 @@
-Markdown
 # Custom Email Template Manager for PrestaShop
 
 A powerful and lightweight PrestaShop module that allows you to replace default transactional emails with **modern, responsive, and image-rich templates**. 
