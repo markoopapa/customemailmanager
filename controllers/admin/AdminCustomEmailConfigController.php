@@ -30,4 +30,49 @@ class AdminCustomEmailConfigController extends ModuleAdminController
 
         return parent::renderForm();
     }
+
+    public function ajaxProcessSendTestEmail()
+{
+    $test_email = Tools::getValue('test_email');
+    $id_template = (int)Tools::getValue('id_template');
+    
+    // Sablon lekérése az adatbázisból
+    $template = new CustomEmailTemplate($id_template);
+    
+    if (Validate::isEmail($test_email) && $template->id) {
+        $content = $template->content_html;
+        
+        // Mintaadatok behelyettesítése a teszthez
+        $vars = [
+            '{shop_name}' => Configuration::get('PS_SHOP_NAME'),
+            '{firstname}' => 'Teszt',
+            '{lastname}' => 'Felhasználó',
+            '{order_name}' => 'ABC12345',
+            '{date}' => date('Y-m-d'),
+            '{payment}' => 'Bank Transfer',
+            '{carrier}' => 'Fan Courier',
+            '{items}' => '<tr><td><img src="https://placehold.co/50" width="50"></td><td>Teszt Termék</td><td align="right">100 RON</td></tr>',
+            '{total_paid}' => '100 RON',
+            '{message}' => 'Ez egy teszt üzenet a vásárlótól.'
+        ];
+
+        $subject = 'Test Email - ' . $template->name;
+
+        // Küldés a PrestaShop saját levelezőjével
+        $res = Mail::Send(
+            (int)Context::getContext()->language->id,
+            'test_template', // dummy template név
+            $subject,
+            $vars,
+            $test_email,
+            null, null, null, null, null,
+            _PS_MODULE_DIR_ . 'customemailmanager/mails/', // modul belső mappája
+            false,
+            (int)Context::getContext()->shop->id
+        );
+
+        die(json_encode(['success' => $res]));
+    }
+    die(json_encode(['success' => false, 'error' => 'Invalid data']));
+}
 }
