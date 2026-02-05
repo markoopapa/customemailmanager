@@ -58,15 +58,15 @@ private function installDefaultTemplates()
 
     public function hookActionEmailSendBefore($params)
 {
-    // 1. Alapadatok kinyerése
+    // 1. Alapadatok és e-mail típus kinyerése
+    $template_name = $params['template']; // Ez pl. 'order_conf' vagy 'new_order'
     $template_vars = &$params['template_vars'];
-    $active_id = (int)Configuration::get('CUSTOM_EMAIL_ACTIVE_ID');
 
-    // 2. Termékképes lista generálása (ha van rendelés)
+    // 2. Termékképes lista generálása (ha van rendelés az adatok között)
     if (isset($template_vars['{id_order}'])) {
         $order = new Order((int)$template_vars['{id_order}']);
         $products = $order->getProducts();
-        $items_html = '<table width="100%" style="border-collapse: collapse;">';
+        $items_html = '<table width="100%" style="border-collapse: collapse; font-family: sans-serif;">';
 
         foreach ($products as $product) {
             $image = Image::getCover($product['product_id']);
@@ -96,27 +96,32 @@ private function installDefaultTemplates()
         $template_vars['{items}'] = $items_html;
     }
 
-    // 3. Sablon csere (Wrapper logika)
-    // Ha van kiválasztott aktív sablon az adminban
-    if ($active_id > 0) {
-        $template_data = new CustomEmailTemplate($active_id);
+    // 3. Specifikus sablon keresése az adatbázisban a célpont alapján
+    $id_template = (int)Db::getInstance()->getValue('
+        SELECT id_template 
+        FROM ' . _DB_PREFIX_ . 'custom_email_templates 
+        WHERE active = 1 
+        AND (target_email = "' . pSQL($template_name) . '" OR target_email = "all")
+        ORDER BY FIELD(target_email, "' . pSQL($template_name) . '", "all") LIMIT 1
+    ');
+
+    // 4. Sablon csere (Wrapper logika), ha találtunk megfelelőt
+    if ($id_template > 0) {
+        $template_data = new CustomEmailTemplate($id_template);
         
         if (Validate::isLoadedObject($template_data)) {
             $full_html = $template_data->content_html;
             
-            // Kicseréljük az összes változót (pl. {shop_name}, {items}, {total_paid}) a sablonban
+            // Kicseréljük az összes változót a sablonban
             foreach ($template_vars as $key => $value) {
-                // Biztosítjuk, hogy csak szöveges adatokat cserélünk
                 if (is_string($value) || is_numeric($value)) {
                     $full_html = str_replace($key, $value, $full_html);
                 }
             }
 
-            // A PrestaShop e-mail küldőjének átadjuk a módosított tartalmat
-            // Ezzel felülírjuk a gyári alapértelmezett fájlt
+            // Felülírjuk a gyári tartalmat a választott sablonnal
             $params['cart_display'] = $full_html; 
             
-            // Néhány Mail modulnál a 'template_html' paramétert is érdemes állítani a biztonság kedvéért
             if (isset($params['template_html'])) {
                 $params['template_html'] = $full_html;
             }
